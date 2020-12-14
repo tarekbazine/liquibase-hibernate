@@ -1,6 +1,8 @@
 package liquibase.ext.hibernate.diff;
 
 import liquibase.change.Change;
+import liquibase.configuration.GlobalConfiguration;
+import liquibase.configuration.LiquibaseConfiguration;
 import liquibase.database.Database;
 import liquibase.diff.Difference;
 import liquibase.diff.ObjectDifferences;
@@ -28,12 +30,37 @@ public class ChangedColumnChangeGenerator extends liquibase.diff.output.changelo
 
     @Override
     protected void handleTypeDifferences(Column column, ObjectDifferences differences, DiffOutputControl control, List<Change> changes, Database referenceDatabase, Database comparisonDatabase) {
+
+//      parameter.read_only_user=app_read
+        //read_only_user
+
+        System.out.println(LiquibaseConfiguration.getInstance().getProperty(GlobalConfiguration.class, "dddf").getValue());
+
         if (referenceDatabase instanceof HibernateDatabase || comparisonDatabase instanceof HibernateDatabase) {
+            System.out.println(column + " getName: " + column.getName() + " getDifferences: " + differences.getDifferences() + " changes: " + changes);
+
+            Difference difference = differences.getDifferences().iterator().next();
+
+
+            System.out.println("getField: " + difference.getField());
+            System.out.println("getComparedValue: " + difference.getComparedValue());
+            System.out.println("getReferenceValue: " + difference.getReferenceValue());
+//            if () {
+
+
+            if (difference.getMessage().contains("'varchar(255)' to 'BIGINT(19)'")) {
+
+                System.out.println("---------------");
+                super.handleTypeDifferences(column, differences, control, changes, referenceDatabase, comparisonDatabase);
+            }
+
+
             // do nothing, types tend to not match with hibernate
         } else {
             super.handleTypeDifferences(column, differences, control, changes, referenceDatabase, comparisonDatabase);
         }
     }
+
 
     @Override
     protected void handleDefaultValueDifferences(Column column, ObjectDifferences differences, DiffOutputControl control, List<Change> changes, Database referenceDatabase, Database comparisonDatabase) {
@@ -47,6 +74,6 @@ public class ChangedColumnChangeGenerator extends liquibase.diff.output.changelo
             }
             // do nothing, types tend to not match with hibernate
         }
-            super.handleDefaultValueDifferences(column, differences, control, changes, referenceDatabase, comparisonDatabase);
+        super.handleDefaultValueDifferences(column, differences, control, changes, referenceDatabase, comparisonDatabase);
     }
 }
